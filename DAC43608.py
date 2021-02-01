@@ -2,97 +2,100 @@ import busio
 import board
 from adafruit_bus_device.i2c_device import I2CDevice
 
-# Standard mode (100 kbps)
-# Fast mode (400 kbps)
-# Fast+ mode (1.0 Mbps)
-#
-# +-----+-----+-----+-----+-----+-----+-----+-----+-----+-----+-----+-----+-----+-----+-----+-----+
-# | MSB | ... | LSB | ACK | MSB | ... | LSB | ACK | MSB | ... | LSB | ACK | MSB | ... | LSB | ACK |
-# +-----+-----+-----+-----+-----+-----+-----+-----+-----+-----+-----+-----+-----+-----+-----+-----+
-# | Address (byte)  |     | Command byte    |     | MSDB            |     | LSDB            |     |
-# +-----------------+-----+-----------------+-----+-----------------+-----+-----------------+-----+
-# | DB [32:24]      |     | DB [23:16]      |     | DB [15:8]       |     | DB [7:0]        |     |
-# +-----------------+-----+-----------------+-----+-----------------+-----+-----------------+-----+
-#
-
-# Vout = (DACn_DATA / (2^N)) * Vref
-#   N = resolution in bits (8 for DAC43608)
-#   DACn_DATA decimal equivalent to binary code loaded into DAC reg
-#   DACn_DATA ranges from 0 to 2^N - 1
-
-# DAC43608 Data Byte (MSDB and LSDB)
-
-# DACn_DATA Register Field
-# B15 - B12 Don't Care
-# B11 - B2  DACn_DATA[7:0]
-#  B1 - B0  Don't Care
 
 class DAC43608:
 
-    i2c = None
-
     # DAC43608 Command Byte
     # Controls which command is executed and which is being accessed.
-    # TI 8.5.4 pg 27
-    # Byte:   B23 - B16
-    __DAC43608_DEVICE_CONFIG = 1
-    __DAC43608_STATUS        = 2
-    __DAC43608_BRDCAST       = 3
-    __DAC43608_DACA_DATA     = 8
-    __DAC43608_DACB_DATA     = 9
-    __DAC43608_DACC_DATA     = 10
-    __DAC43608_DACD_DATA     = 11
-    __DAC43608_DACE_DATA     = 12
-    __DAC43608_DACF_DATA     = 13
-    __DAC43608_DACG_DATA     = 14
-    __DAC43608_DACH_DATA     = 15
+    _DEVICE_CONFIG = 1
+    _STATUS        = 2
+    _BRDCAST       = 3
+    A = 8
+    B = 9
+    C = 10
+    D = 11
+    E = 12
+    F = 13
+    G = 14
+    H = 15
 
 
     def __init__(self, address=0x49):
         comm_port = busio.I2C(board.SCL, board.SDA)
         self.i2c = I2CDevice(comm_port, address)
 
+    def power_up_all(self):
+        # sets all channels to their registered value (default is 1, i.e. maximum)
+        self.write_config([0x00, 0x00])
+
+    def power_down_all(self):
+        # power down all outputs
+        self.write_config([0xFF, 0xFF])
+
+    def power_to(self, channel, fraction):
+        """
+        Set the output to a fraction of the maximum current
+
+        Parameters
+        -----------
+
+        channel: int
+           an int between 0 to 8, aka, a DAC43608.X value
+        fraction: float
+           a float between 0 to 1, representing how much of the total maximum current
+           to release.
+        """
+        assert 0 <= fraction <= 1, "must be between 0 and 1 inclusive."
+        SPAN = 112
+        target = round(SPAN * fraction)
+        a = target // 16
+        b = target - a * 16
+
+        self.write_dac(channel, [a, b * 16])
+        return
+
+    ### low level API
 
     def write_dac(self, command, data):
         buffer_ = bytearray([command, *data])
-        self.i2c.write()
+        self.i2c.write(buffer_)
         return
 
     def write_config(self, config_byte):
-        self.write_dac(self.__DAC43608_DEVICE_CONFIG, config_byte)
+        self.write_dac(self._DEVICE_CONFIG, config_byte)
         return
 
     def write_dac_A(self, DACn_DATA):
         """
         DACn_DATA is an array of two bytes/integers, ex: [0x08, 0x04] or [15, 20]
         """
-        self.write_dac(self.__DAC43608_DACA_DATA, DACn_DATA)
+        self.write_dac(self.A, DACn_DATA)
         return
 
     def write_dac_B(self, DACn_DATA):
-        self.write_dac(self.__DAC43608_DACB_DATA, DACn_DATA)
+        self.write_dac(self.B, DACn_DATA)
         return
 
     def write_dac_C(self, DACn_DATA):
-        self.write_dac(self.__DAC43608_DACC_DATA, DACn_DATA)
+        self.write_dac(self.C, DACn_DATA)
         return
 
     def write_dac_D(self, DACn_DATA):
-        self.write_dac(self.__DAC43608_DACD_DATA, DACn_DATA)
+        self.write_dac(self.D, DACn_DATA)
         return
 
     def write_dac_E(self, DACn_DATA):
-        self.write_dac(self.__DAC43608_DACE_DATA, DACn_DATA)
+        self.write_dac(self.E, DACn_DATA)
         return
 
     def write_dac_F(self, DACn_DATA):
-        self.write_dac(self.__DAC43608_DACF_DATA, DACn_DATA)
+        self.write_dac(self.F, DACn_DATA)
         return
 
     def write_dac_G(self, DACn_DATA):
-        self.write_dac(self.__DAC43608_DACG_DATA, DACn_DATA)
+        self.write_dac(self.G, DACn_DATA)
         return
 
     def write_dac_H(self, DACn_DATA):
-        self.write_dac(self.__DAC43608_DACH_DATA, DACn_DATA)
+        self.write_dac(self.H, DACn_DATA)
         return
