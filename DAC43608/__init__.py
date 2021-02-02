@@ -28,11 +28,14 @@ class DAC43608:
         # sets all channels to their registered value (default is 1, i.e. maximum)
         self.write_config([0x00, 0x00])
 
+    def power_up(self, channel):
+        self.write_config([0x00, channel - 8])
+
     def power_down_all(self):
         # power down all outputs
         self.write_config([0xFF, 0xFF])
 
-    def power_to(self, channel, fraction):
+    def set_intensity_to(self, channel, fraction):
         """
         Set the output to a fraction of the maximum current
 
