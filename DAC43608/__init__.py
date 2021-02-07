@@ -26,6 +26,15 @@ class DAC43608:
         self.write_config([0x00, 0x00])
 
     def power_up(self, channel):
+        """
+        Turn on the LED to it's register value
+
+        Parameters
+        -----------
+
+        channel: int
+           an int between 8 to 11, aka, a `DAC43608.X` value
+        """
         # this needs to first read the current state of the config, and then make the modification
         write_buffer = bytearray([self._DEVICE_CONFIG])
         read_buffer = bytearray(2)
@@ -48,7 +57,9 @@ class DAC43608:
 
     def set_intensity_to(self, channel, fraction):
         """
-        Set the output to a fraction of the maximum current
+        Set the output to a fraction of the maximum output. This only set it's in the register, you
+        still need to power up the channel using `power_up`. This can happen before or after the register is
+        populated.
 
         Parameters
         -----------
