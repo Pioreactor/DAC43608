@@ -14,10 +14,7 @@ class DAC43608:
     B = 9
     C = 10
     D = 11
-    E = 12
-    F = 13
-    G = 14
-    H = 15
+
 
 
     def __init__(self, address=0x49):
@@ -25,11 +22,25 @@ class DAC43608:
         self.i2c = I2CDevice(comm_port, address)
 
     def power_up_all(self):
-        # sets all channels to their registered value (default is 1, i.e. maximum)
+        # sets all channels to their registered value (default is 1 if nothing is in the register, i.e. maximum)
         self.write_config([0x00, 0x00])
 
     def power_up(self, channel):
-        self.write_config([0x00, channel - 8])
+        # this needs to first read the current state of the config, and then make the modification
+        write_buffer = bytearray([self._DEVICE_CONFIG])
+        read_buffer = bytearray(2)
+        self.i2c.write_then_readinto(write_buffer, read_buffer)
+        current_config = read_buffer[0] # the order is reversed from what I expected
+
+        # write back to config the bitwise-or of our new channel and the old config.
+        # example, if the current config is
+        # 0b00001101
+        # and we want to flip channel A on (the right-most digit), start with
+        # 0b0001111
+        # subtract 1 from the desired position (start from the right)
+        # 0b0001111 - (1 << position)
+        # and AND that with the original
+        self.write_config([current_config & (0x0F - (1 << (channel-8))), 0x00])
 
     def power_down_all(self):
         # power down all outputs
@@ -43,12 +54,18 @@ class DAC43608:
         -----------
 
         channel: int
-           an int between 0 to 8, aka, a DAC43608.X value
+           an int between 8 to 11, aka, a `DAC43608.X` value
         fraction: float
            a float between 0 to 1, representing how much of the total maximum current
            to release.
         """
+
         assert 0 <= fraction <= 1, "must be between 0 and 1 inclusive."
+
+        # first make sure it's powered up
+        self.power_up(channel)
+
+
         SPAN = 112
         target = round(SPAN * fraction)
         a = target // 16
@@ -85,20 +102,4 @@ class DAC43608:
 
     def write_dac_D(self, DACn_DATA):
         self.write_dac(self.D, DACn_DATA)
-        return
-
-    def write_dac_E(self, DACn_DATA):
-        self.write_dac(self.E, DACn_DATA)
-        return
-
-    def write_dac_F(self, DACn_DATA):
-        self.write_dac(self.F, DACn_DATA)
-        return
-
-    def write_dac_G(self, DACn_DATA):
-        self.write_dac(self.G, DACn_DATA)
-        return
-
-    def write_dac_H(self, DACn_DATA):
-        self.write_dac(self.H, DACn_DATA)
         return
