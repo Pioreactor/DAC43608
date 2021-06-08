@@ -14,6 +14,11 @@ class DAC43608:
     B = 9
     C = 10
     D = 11
+    E = 12
+    F = 13
+    G = 14
+    H = 15
+
 
 
 
@@ -27,7 +32,7 @@ class DAC43608:
 
     def power_up(self, channel):
         """
-        Turn on the LED to it's register value
+        Turn on the LED to its register value
 
         Parameters
         -----------
@@ -113,4 +118,20 @@ class DAC43608:
 
     def write_dac_D(self, DACn_DATA):
         self.write_dac(self.D, DACn_DATA)
+        return
+
+    def write_dac_E(self, DACn_DATA):
+        self.write_dac(self.E, DACn_DATA)
+        return
+
+    def write_dac_F(self, DACn_DATA):
+        self.write_dac(self.F, DACn_DATA)
+        return
+
+    def write_dac_G(self, DACn_DATA):
+        self.write_dac(self.G, DACn_DATA)
+        return
+
+    def write_dac_H(self, DACn_DATA):
+        self.write_dac(self.H, DACn_DATA)
         return
