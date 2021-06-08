@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 import busio
 import board
 from adafruit_bus_device.i2c_device import I2CDevice
@@ -8,8 +9,8 @@ class DAC43608:
     # DAC43608 Command Byte
     # Controls which command is executed and which is being accessed.
     _DEVICE_CONFIG = 1
-    _STATUS        = 2
-    _BRDCAST       = 3
+    _STATUS = 2
+    _BRDCAST = 3
     A = 8
     B = 9
     C = 10
@@ -18,9 +19,6 @@ class DAC43608:
     F = 13
     G = 14
     H = 15
-
-
-
 
     def __init__(self, address=0x49):
         comm_port = busio.I2C(board.SCL, board.SDA)
@@ -44,7 +42,7 @@ class DAC43608:
         write_buffer = bytearray([self._DEVICE_CONFIG])
         read_buffer = bytearray(2)
         self.i2c.write_then_readinto(write_buffer, read_buffer)
-        current_config = read_buffer[0] # the order is reversed from what I expected
+        current_config = read_buffer[0]  # the order is reversed from what I expected
 
         # write back to config the bitwise-or of our new channel and the old config.
         # example, if the current config is
@@ -54,7 +52,7 @@ class DAC43608:
         # subtract 1 from the desired position (start from the right)
         # 0b0001111 - (1 << position)
         # and AND that with the original
-        self.write_config([current_config & (0x0F - (1 << (channel-8))), 0x00])
+        self.write_config([current_config & (0x0F - (1 << (channel - 8))), 0x00])
 
     def power_down_all(self):
         # power down all outputs
@@ -80,7 +78,6 @@ class DAC43608:
 
         # first make sure it's powered up
         self.power_up(channel)
-
 
         SPAN = 112
         target = round(SPAN * fraction)
