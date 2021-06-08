@@ -20,7 +20,7 @@ pip3 install DAC43608
 
 ### Simple usage
 
-```
+```python
 from DAC43608 import DAC43608
 
 dac = DAC43608()
