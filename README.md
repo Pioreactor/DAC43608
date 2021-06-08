@@ -8,7 +8,6 @@ You will need `python3` first, install with
 ```
 sudo apt update
 sudo apt install -y python3-pip
-
 ```
 
 Install the library with:
