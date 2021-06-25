@@ -13,7 +13,7 @@ with open("README.md") as f:
 
 setup(
     name="DAC43608",
-    version="0.2.2",
+    version="0.2.3",
     description="A python wrapper for interacting with the DAC43608",
     author="Cam Davidson-Pilon",
     author_email="cam@pioreactor.com",

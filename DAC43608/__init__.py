@@ -95,7 +95,7 @@ class DAC43608:
         write_buffer = bytearray([self._DEVICE_CONFIG])
         read_buffer = bytearray(2)
         self.i2c.write_then_readinto(write_buffer, read_buffer)
-        current_config = read_buffer[0]  # the order is reversed from what I expected
+        current_config = read_buffer[1]
 
         new_config = current_config | (1 << (channel - 8))
         self.write_config([0x00, new_config])
@@ -117,9 +117,6 @@ class DAC43608:
         """
 
         assert 0 <= fraction <= 1, "must be between 0 and 1 inclusive."
-
-        # first make sure it's powered up
-        self.power_up(channel)
 
         SPAN = 112
         target = round(SPAN * fraction)
