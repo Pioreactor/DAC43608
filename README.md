@@ -8,7 +8,6 @@ You will need `python3` first, install with
 ```
 sudo apt update
 sudo apt install -y python3-pip
-
 ```
 
 Install the library with:
@@ -20,7 +19,7 @@ pip3 install DAC43608
 
 ### Simple usage
 
-```
+```python
 from DAC43608 import DAC43608
 
 dac = DAC43608()
