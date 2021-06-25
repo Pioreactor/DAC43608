@@ -1,7 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from distutils.core import setup
+from setuptools import setup, find_packages
+
 
 with open("requirements.txt") as f:
     REQUIREMENTS = f.read().splitlines()
@@ -17,9 +18,9 @@ setup(
     author="Cam Davidson-Pilon",
     author_email="cam@pioreactor.com",
     url="https://github.com/Pioreactor/DAC43608",
-    packages=["DAC43608"],
     license="MIT",
     python_requires=">=3.6",
+    packages=find_packages("."),
     install_requires=REQUIREMENTS,
     long_description=LONG_DESCRIPTION,
     long_description_content_type=LONG_DESC_TYPE,
