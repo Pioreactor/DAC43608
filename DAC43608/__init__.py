@@ -30,33 +30,75 @@ class DAC43608:
 
     def power_up(self, channel):
         """
-        Turn on the LED to its register value
+        Turn on the output to its register value
 
         Parameters
         -----------
 
         channel: int
-           an int between 8 to 11, aka, a `DAC43608.X` value
+           an int between 8 to 15, aka, a `DAC43608.X` value
+
+
+        Notes
+        --------
+        The on-off state is represented by 8 bits in the config, 1 being off, 0 being on.
+        We bit-flip the channel we want, so if the config is
+
+        11111110
+
+        ie channel A is on, but we want to also turn channel C on, so our desired state is
+
+        11111010
+
         """
+
         # this needs to first read the current state of the config, and then make the modification
+        write_buffer = bytearray([self._DEVICE_CONFIG])
+        read_buffer = bytearray(2)
+        self.i2c.write_then_readinto(write_buffer, read_buffer)
+        current_config = read_buffer[1]
+
+        new_config = ~((~current_config) | 1 << (channel - 8))
+
+        self.write_config([0x00, new_config])
+
+    def power_down_all(self):
+        """
+        power down all outputs by setting the PDN-All config input to 1
+        """
+        self.write_config([0x01, 0xFF])
+
+    def power_down(self, channel):
+        """
+        Turn off the output
+
+        Parameters
+        -----------
+
+        channel: int
+           an int between 8 to 15, aka, a `DAC43608.X` value
+
+
+        Notes
+        --------
+        The on-off state is represented by 8 bits in the config, 1 being off, 0 being on.
+        We bit-flip the channel we want to turn off, so if the config is
+
+        11111110
+
+        ie channel A is on, but we want to turn it off:
+
+        11111111
+
+        """
+
         write_buffer = bytearray([self._DEVICE_CONFIG])
         read_buffer = bytearray(2)
         self.i2c.write_then_readinto(write_buffer, read_buffer)
         current_config = read_buffer[0]  # the order is reversed from what I expected
 
-        # write back to config the bitwise-or of our new channel and the old config.
-        # example, if the current config is
-        # 0b00001101
-        # and we want to flip channel A on (the right-most digit), start with
-        # 0b0001111
-        # subtract 1 from the desired position (start from the right)
-        # 0b0001111 - (1 << position)
-        # and AND that with the original
-        self.write_config([current_config & (0x0F - (1 << (channel - 8))), 0x00])
-
-    def power_down_all(self):
-        # power down all outputs
-        self.write_config([0xFF, 0xFF])
+        new_config = current_config | (1 << (channel - 8))
+        self.write_config([0x00, new_config])
 
     def set_intensity_to(self, channel, fraction):
         """
