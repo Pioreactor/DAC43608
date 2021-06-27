@@ -4,7 +4,7 @@ import board
 from adafruit_bus_device.i2c_device import I2CDevice
 
 
-class DAC3608:
+class DAC43608:
 
     # DAC43608 Command Byte
     # Controls which command is executed and which is being accessed.
