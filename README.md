@@ -39,4 +39,6 @@ dac.power_down_all()
 
 # write to a channel B
 dac.write_dac_B([0x08, 0x04])
+
+dac.power_down(dac.B)
 ```

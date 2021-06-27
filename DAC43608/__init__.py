@@ -4,7 +4,7 @@ import board
 from adafruit_bus_device.i2c_device import I2CDevice
 
 
-class DAC43608:
+class DAC3608:
 
     # DAC43608 Command Byte
     # Controls which command is executed and which is being accessed.
@@ -53,10 +53,7 @@ class DAC43608:
         """
 
         # this needs to first read the current state of the config, and then make the modification
-        write_buffer = bytearray([self._DEVICE_CONFIG])
-        read_buffer = bytearray(2)
-        self.i2c.write_then_readinto(write_buffer, read_buffer)
-        current_config = read_buffer[1]
+        current_config = self.read_config()[1]
 
         new_config = ~((~current_config) | 1 << (channel - 8))
 
@@ -92,10 +89,7 @@ class DAC43608:
 
         """
 
-        write_buffer = bytearray([self._DEVICE_CONFIG])
-        read_buffer = bytearray(2)
-        self.i2c.write_then_readinto(write_buffer, read_buffer)
-        current_config = read_buffer[1]
+        current_config = self.read_config()[1]
 
         new_config = current_config | (1 << (channel - 8))
         self.write_config([0x00, new_config])
@@ -118,15 +112,21 @@ class DAC43608:
 
         assert 0 <= fraction <= 1, "must be between 0 and 1 inclusive."
 
-        SPAN = 112
+        # really, the only difference between DAC43608 and DAC53608 is that
+        # SHIFT = 2 and SPAN = 1023
+        SPAN = 255
+        SHIFT = 4
         target = round(SPAN * fraction)
-        a = target // 16
-        b = target - a * 16
-
-        self.write_dac(channel, [a, b * 16])
+        self.write_dac(channel, (target << SHIFT).to_bytes(2, "big"))
         return
 
     ### low level API
+
+    def read_config(self):
+        write_buffer = bytearray([self._DEVICE_CONFIG])
+        read_buffer = bytearray(2)
+        self.i2c.write_then_readinto(write_buffer, read_buffer)
+        return read_buffer
 
     def write_dac(self, command, data):
         buffer_ = bytearray([command, *data])
@@ -139,7 +139,7 @@ class DAC43608:
 
     def write_dac_A(self, DACn_DATA):
         """
-        DACn_DATA is an array of two bytes/integers, ex: [0x08, 0x04] or [15, 20]
+        DACn_DATA is an iterable of two bytes/integers, ex: [0x08, 0x04] or [15, 20]
         """
         self.write_dac(self.A, DACn_DATA)
         return
