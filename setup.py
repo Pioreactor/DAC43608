@@ -3,10 +3,6 @@
 
 from setuptools import setup, find_packages
 
-
-with open("requirements.txt") as f:
-    REQUIREMENTS = f.read().splitlines()
-
 with open("README.md") as f:
     LONG_DESCRIPTION, LONG_DESC_TYPE = f.read(), "text/markdown"
 
@@ -22,7 +18,7 @@ setup(
     python_requires=">=3.6",
     packages=find_packages("."),
     package_data={"DAC43608": ["py.typed"]},
-    install_requires=REQUIREMENTS,
+    install_requires=["adafruit-circuitpython-busdevice", "Adafruit-Blinka"],
     long_description=LONG_DESCRIPTION,
     long_description_content_type=LONG_DESC_TYPE,
 )
